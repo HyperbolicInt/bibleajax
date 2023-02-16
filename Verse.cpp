@@ -35,8 +35,12 @@ Ref Verse::getRef() {
     return verseRef;
 }
 
-// display reference and verse
+// display verse number and then the verse
 void Verse::display() {
     cout << verseNum << " " << verseText;
  }
+
+void Verse::displayVerseHtml(){
+   cout << " <b>" << verseNum << " </b> " << verseText;
+}
 

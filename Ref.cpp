@@ -63,6 +63,7 @@ int Ref::getVerse() {return verse;}; // Access verse number
 
 // TO DO: implement comparison functions
 // REQUIRED: == comparison
+//if the ref has the same book, chapter, and verse as the other ref, then they are the same!
 bool Ref::operator==(const Ref r) {
     return (this->book == r.book && this->chap == r.chap && this->verse == r.verse);
 }

@@ -38,10 +38,9 @@ int main() {
    * For an AJAX request, our response is not a complete HTML document,
    * so the response type is just plain text to insert into the web page.
    */
-  //puttin' these bad boys up here so we can use em' later
+  //Create the webBible to use in the rest of the code
   Bible webBible("/home/class/csc3004/Bibles/web-complete");
-  Verse parsedVerse;
-  LookupResult result;
+
 
   cout << "Content-Type: text/plain\n\n";
   
@@ -57,24 +56,62 @@ int main() {
   form_iterator nv = cgi.getElement("num_verse");
 
   // Convert and check input data
-  bool validInput = false;
+  bool validChapterInput = false;
   if (chapter != cgi.getElements().end()) {
 	 int chapterNum = chapter->getIntegerValue();
 	 if (chapterNum > 150) {
 		 cout << "<p>The chapter number (" << chapterNum << ") is too high.</p>" << endl;
-	 }
-	 else if (chapterNum <= 0) {
+	 } else if (chapterNum < 0) {
 		 cout << "<p>The chapter must be a positive number.</p>" << endl;
-	 }
-	 else
-		 validInput = true;
+	 } else if (chapterNum == 0){
+		 cout << "<p>Your chapter input is either 0 or empty! Please retry.</p>" << endl;
+	 }else
+		 validChapterInput = true;
   }
-  
-  /* TO DO: OTHER INPUT VALUE CHECKS ARE NEEDED ... but that's up to you! */
 
-  /* TO DO: PUT CODE HERE TO CALL YOUR BIBLE CLASS FUNCTIONS
-   *        TO LOOK UP THE REQUESTED VERSES
-   */
+  bool validVerseInput = false;
+  if (verse != cgi.getElements().end()) {
+	 int verseNum = verse->getIntegerValue();
+	 if (verseNum > 176) {
+		 cout << "<p>The verse number (" << verseNum << ") is too high.</p>" << endl;
+	 }
+	 else if (verseNum < 0) {
+		 cout << "<p>The verse must be a positive number.</p>" << endl;
+	 } else if (verseNum == 0){
+		 cout << "<p>Your verse input is either 0 or empty! Please retry.</p>" << endl;
+	 }else
+		 validVerseInput = true;
+  }
+
+
+  /*
+  //This section of code is just in case the program changes to where the user inputs a number for the book instead of the dropdown boxes
+  bool validBookInput = false;
+  if(book != cgi.getElements().end()){
+	int bookNum = book->getIntegerValue();
+	if(bookNum > 65) {
+		cout << "<p>The book you have selected is too high!</p>" << endl;
+	} else if (bookNum <= 0){
+		cout << "<p>The book musrt be a positive number.</p>" << endl;
+	}
+	else
+		validBookInput = true;
+  }
+  */
+  
+  /* This starts my main part of the code! The general premise is this:
+	-Put the user input into variables through use of getIntegerValue();
+	-With that input, make a reference to correspond to a place in the Bible
+	-If the result of that lookup is success, then output the verse!
+	-If not, run the error code for the line of code
+  */
+
+  //Make a verse to store the current verse the input stream is on - like a bookmark
+  Verse parsedVerse;
+
+  //inititalizing a result variable to keep track of the verse status
+  LookupResult result;
+
 	//book
 	int b = book->getIntegerValue();
 	//chapter
@@ -83,30 +120,30 @@ int main() {
 	int v = verse->getIntegerValue();
 	//number of verses
 	int numv = nv->getIntegerValue();
-        Ref ref(b, c, v);
 
+	//make the ref from the inputs
+        Ref ref(b, c, v);
+        
+	//assign a value to the bookmark verse, which we will call parsedVerse
 	parsedVerse = webBible.lookup(ref, result);
 
-if (result == SUCCESS) {
-	//print out book and chapter num
-	cout << ref.gBook() << ":" << ref.getChap() << " " << endl;
-	parsedVerse.display();
-	cout << endl;
-	for (int i = 1; i < numv; i++) {
-		if (result == SUCCESS) {
-			parsedVerse = webBible.nextVerse(result);
-			parsedVerse.display();
-			cout << endl;
+//if there is valid character and verse input, print out the verse(s)
+if(validChapterInput && validVerseInput){
+	if (result == SUCCESS) {
+		//print out book and chapter num
+		cout << "<b>" <<ref.gBook() << ":" << ref.getChap() << " </b><br><br>";
+		parsedVerse.displayVerseHtml();
+		cout << endl;
+			//if there is more than one verse, print out that many verses after the current one
+			for (int i = 1; i < numv; i++) {
+				if (result == SUCCESS) {
+				parsedVerse = webBible.nextVerse(result);
+				parsedVerse.displayVerseHtml();
+				cout << endl;
 			}
 		}
 	} else 
 		cout << webBible.error(result) << endl;
-
-  /* SEND BACK THE RESULTS
-   * Finally we send the result back to the client on the standard output stream
-   * in HTML text format.
-   * This string will be inserted as is inside a container on the web page, 
-   * so we must include HTML formatting commands to make things look presentable!
-   */
+}
   return 0;
 }

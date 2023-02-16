@@ -32,7 +32,7 @@ class Verse {
 
    // Display Verse on cout
    void display(); // Display ref & verse [with line breaks in needed].
-        // the reference should be displayed by calling verseref.display().
+   void displayVerseHtml(); //Display verse number in bold when displayed on the Wepage
 };
 
 #endif //Verse_H
