@@ -16,6 +16,7 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <map>
 using namespace std;
 
 // status codes to be returned when looking up a reference
@@ -24,11 +25,15 @@ enum LookupResult { SUCCESS, NO_BOOK, NO_CHAPTER, NO_VERSE, OTHER };
 class Bible {	// A class to represent a version of the bible
  private:
    string infile;		// file path name
-   ifstream instream;	// input stream, used when file is open
+   ifstream instream;		// input stream, used when file is open
    bool isOpen;			// true if file is open
    Ref placeHolder;		// keep placeholder
    // OPTIONAL: you may add variables to keep track of
    // the current line and/or reference when scanning the file
+   map<Ref,int> refIndex;
+
+   //last value position
+   streampos lastValuePosition;
 
  public:
    Bible();	// Default constructor
@@ -51,5 +56,18 @@ class Bible {	// A class to represent a version of the bible
    Ref next(const Ref ref, LookupResult& status);
    // OPTIONAL: Return the reference before the given parameter ref
    Ref prev(const Ref ref, LookupResult& status);
+
+   //build da index
+   void buildRefIndex();
+
+   //return da index size
+   int getIndexSize();
+   
+   //return da last input byte offset thingy
+   int getlastIndexByteOffset();
+
+   //get da position of ref in the index
+   int getRefPosition(Ref r);
+   
 };
 #endif //Bible_H

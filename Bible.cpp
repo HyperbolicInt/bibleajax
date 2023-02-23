@@ -29,6 +29,7 @@ Bible::Bible(const string s) {
         cerr << "Error - can't open input file: " << infile << endl;
         exit(2);
     }
+    buildRefIndex();
 }
 
 // REQUIRED: lookup finds a given verse in this Bible
@@ -161,6 +162,35 @@ string Bible::error(LookupResult status) {
 void Bible::display() {
 	cout << "Bible file: " << infile << endl;
 }
+
+void Bible::buildRefIndex(){
+	string l;
+	do{
+	streampos position = instream.tellg();
+	getline(instream, l);
+        	if (!l.empty()) {
+			Ref curRef = Ref(l);
+			refIndex[curRef] = position;
+			lastValuePosition = instream.tellg();
+		}
+	} while (!instream.fail());
+}
+
+int Bible::getIndexSize(){
+	return refIndex.size();
+}
+
+int Bible::getlastIndexByteOffset(){
+	return lastValuePosition;
+}
+
+int Bible::getRefPosition(Ref r){
+	if(refIndex.find(r) == refIndex.end()){
+		return 69;
+	}else
+		return refIndex[r];
+}
+
 	
 // OPTIONAL access functions
 // OPTIONAL: Return the reference after the given ref

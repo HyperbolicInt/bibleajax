@@ -25,18 +25,18 @@ public:
    Ref(string s); 	// Parse constructor - example parameter "43:3:16"
    Ref(const int,const int,const int); 	// Construct from three integers;
    // Accessors
-   int getBook();	// Access book number
-   int getChap();	// Access chapter number
-   int getVerse();	// Access verse number
+   int getBook() const;	// Access book number
+   int getChap() const;	// Access chapter number
+   int getVerse() const; // Access verse number
 
    string gBook();  //Access the string name of the book
 
    // REQUIRED Comparison: determine if two references are equal
-   bool operator==(const Ref);
+   bool operator==(const Ref) const;
    // OPTIONAL: < and > comparisons for Ref objects might also be useful
    
-   bool operator>(const Ref);
-   bool operator<(const Ref);
+   bool operator>(const Ref) const;
+   bool operator<(const Ref) const;
 
    // REQUIRED: Display the reference on cout, example output: John 3:16
    void display();

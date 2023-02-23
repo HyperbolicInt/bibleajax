@@ -57,27 +57,47 @@ Ref::Ref(const int b, const int c, const int v) { 	// Construct Ref from three i
 }
 
 // Accessors
-int Ref::getBook() {return book;}	 // Access book number
-int Ref::getChap() {return chap;}	 // Access chapter number
-int Ref::getVerse() {return verse;}; // Access verse number
+int Ref::getBook() const {return book;}	 // Access book number
+int Ref::getChap() const {return chap;}	 // Access chapter number
+int Ref::getVerse() const {return verse;}; // Access verse number
 
 // TO DO: implement comparison functions
 // REQUIRED: == comparison
 //if the ref has the same book, chapter, and verse as the other ref, then they are the same!
-bool Ref::operator==(const Ref r) {
+bool Ref::operator==(const Ref r) const{
     return (this->book == r.book && this->chap == r.chap && this->verse == r.verse);
 }
 
 // OPTIONAL: define < and > comparisons
-bool Ref::operator>(const Ref r) {
-    int first = this->getBook();
-    int second = r.book;
-    return (first > second);
+bool Ref::operator>(const Ref r) const{
+    //compare book
+    int firstBook = this->getBook();
+    int secondBook = r.book;
+    bool isBookGreater = (firstBook > secondBook);
+    //compare chapters
+    int firstChap = this->getChap();
+    int secondChap = r.chap;
+    bool isChapGreater = (firstChap > secondChap);
+    //compare verse
+    int firstVerse = this->getVerse();
+    int secondVerse = r.verse;
+    bool isVerseGreater = (firstVerse > secondVerse);
+
+    if(firstBook == secondBook){
+	if(firstChap == secondChap){
+		if(isVerseGreater)
+			return true;	
+	} else if(isChapGreater)
+		return true;
+    }else if(isBookGreater)
+	return true;
+    return false;
 }
-bool Ref::operator<(const Ref r) {
-    int first = this->getBook();
-    int second = r.book;
-    return (first < second);
+
+bool Ref::operator<(const Ref r) const {
+    bool isRefGreater = *this > r;
+    bool isRefEqual = *this == r;
+    return (!isRefGreater && !isRefEqual);
 }
 
 // TO DO: modify display function to show book name instead of book number
