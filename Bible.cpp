@@ -34,88 +34,42 @@ Bible::Bible(const string s) {
 
 // REQUIRED: lookup finds a given verse in this Bible
 Verse Bible::lookup(Ref ref, LookupResult& status) { 
-    // TODO: scan the file to retrieve the line that holds ref ...
-    // update the status variable
-	status = OTHER; // placeholder until retrieval is attempted
-    string l;
-    bool sentinel = true;
-    bool bookFound = false;
-    bool chapFound = false;
-    bool verseFound = false;
-    //error verse to return if verse is not found
-    Verse eVerse = Verse("1:1:1 Error verse, try again!");
-    
-    //find the verse the user is looking for and if it doesn't exist, throw the correct error
-    do {
-        getline(instream, l);
-        if (!l.empty()) {
-            Ref mark = Ref(l);
-            if (mark.getBook() == ref.getBook()) {
-                bookFound = true;
-                if (mark.getChap() == ref.getChap()) {
-                    chapFound = true;
-                    if (mark.getVerse() == ref.getVerse()) {
-                        verseFound = true;
-                        Verse foundVerse = Verse(l);
-                        status = SUCCESS;
-                        return foundVerse;
-                    }
-                }
-            }
-        }
-        status = OTHER;
-        sentinel = false;
-    } while (!instream.fail() || sentinel == true);
+	//pass ref!
+	//find the ref in the map!
+	auto refIter = refIndex.find(ref);
+	//if the ref doesn't exist, run the error
+	if(refIter == refIndex.end()){
+		//check to see if ref with verse as 1 works (if so, verse is the problem)
+		//then do this with chap
+		Ref verseCheck = Ref(ref.getBook(), ref.getChap(), 1);
+		auto refIter2 = refIndex.find(verseCheck);
+		if(refIter2 == refIndex.end()){
+			Ref chapCheck = Ref(ref.getBook(), 1, 1);
+			auto refIter3 = refIndex.find(chapCheck);
+			if(refIter3 == refIndex.end()){
+				status = NO_BOOK;
+			} else
+			status = NO_CHAPTER;
+		} else
+		status = NO_VERSE;
+	return Verse();
+	}
+	//if we get le number back
+	//seek it in the original file
+	//we must also clear the instream because we've already gone through the bible once
+	//and C++ is cranky with that
+	instream.clear();
+	instream.seekg(refIndex[ref]);
 
-    if (bookFound == false) {
-        status = NO_BOOK;
-    }
-    else if (chapFound == false) {
-        status = NO_CHAPTER;
-    }
-    else if (verseFound == false) {
-        status = NO_VERSE;
-    }
+	//read that line
+	string l;
+	getline(instream, l);
+	
+	//make a verse out of the line
+	Verse verse = Verse(l);
 
-    return eVerse;
-    /*
-	// create and return the verse object
-    do {
-        // get the next verse
-        getline(instream, l);
-        if (!l.empty()) {
-            Ref verse = Ref(l);
-            if (verse.getBook() == ref.getBook() || verse.getBook() < ref.getBook() || ref.getBook() < 66){
-                if (verse.getChap() == ref.getChap()|| verse.getChap() < ref.getChap()){
-                    if (verse.getVerse() == ref.getVerse()|| verse.getVerse() < ref.getVerse()){
-                        Verse foundVerse = Verse(l);
-                        if (foundVerse.getRef() == ref) {
-                            status = SUCCESS;
-                            return foundVerse;
-                        }
-                    }
-                    else if(verse.getVerse() > ref.getVerse())
-                    {
-                        status = NO_VERSE;
-                        sentinel = false;
-                    }
-                }
-                else if(verse.getChap() > ref.getChap())
-                {
-                    status = NO_CHAPTER;
-                    sentinel = false;
-                }
-            }
-            else 
-            {
-                status = NO_BOOK;
-                sentinel = false;
-            }
-        }
-    } while (!instream.fail() || sentinel == true);
-
-    return(eVerse);
-    */
+	//return that verse
+	return verse;
 }
 
 // REQUIRED: Return the next verse from the Bible file stream if the file is open.
@@ -186,7 +140,7 @@ int Bible::getlastIndexByteOffset(){
 
 int Bible::getRefPosition(Ref r){
 	if(refIndex.find(r) == refIndex.end()){
-		return 69;
+		return 10;
 	}else
 		return refIndex[r];
 }
@@ -194,7 +148,12 @@ int Bible::getRefPosition(Ref r){
 	
 // OPTIONAL access functions
 // OPTIONAL: Return the reference after the given ref
-//Ref Bible::next(const Ref ref, LookupResult& status) {}
+Ref Bible::next(const Ref ref, LookupResult& status) {
+	auto refIter = refIndex.find(ref);
+	refIter++;
+	return refIter->first;
+}
+	
 
 // OPTIONAL: Return the reference before the given ref
 //Ref Bible::prev(const Ref ref, LookupResult& status) {}
