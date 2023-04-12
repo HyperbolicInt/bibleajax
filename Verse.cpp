@@ -38,9 +38,27 @@ Ref Verse::getRef() {
 // display verse number and then the verse
 void Verse::display() {
     cout << verseNum << " " << verseText;
- }
+}
+
+//return verse number only
+int Verse::getVerseNum(){
+	return verseNum;
+}
 
 void Verse::displayVerseHtml(){
    cout << " <b>" << verseNum << " </b> " << verseText;
+}
+
+//return the book of the bible the verse is in.
+string Verse::getVerseBook(){
+   Ref ref = this->getRef();
+   return ref.gBook();
+}
+
+//return the chapter of the bible the verse is as a string
+string Verse::getVerseChap(){
+   Ref ref = this->getRef();
+   string chapterNumAsString = to_string(ref.getChap());
+   return chapterNumAsString;
 }
 

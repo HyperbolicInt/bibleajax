@@ -31,6 +31,7 @@ class Bible {	// A class to represent a version of the bible
    // OPTIONAL: you may add variables to keep track of
    // the current line and/or reference when scanning the file
    map<Ref,int> refIndex;
+   bool doesRefIndexExist;
 
    //last value position
    streampos lastValuePosition;
@@ -68,6 +69,11 @@ class Bible {	// A class to represent a version of the bible
 
    //get da position of ref in the index
    int getRefPosition(Ref r);
+
+   //accessor
+   bool getDoesRefIndexExist();
+   //mutator
+   void setDoesRefIndexExist(bool x);
    
 };
 #endif //Bible_H

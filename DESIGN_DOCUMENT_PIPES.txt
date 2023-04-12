@@ -1,0 +1,13 @@
+Design Document -- Bible Lookup Pipes
+Author: Gina Lawhon
+
+Request Pipe Format: booknumber:chapternumber:versenumber:numberofverses
+
+Reply Pipe Format: (STATUS)$Versetext
+
+
+*The sslookupclient receives the input from the user and puts it into a string
+*This string is then passed through a pipe to the server, which turns it into a ref
+*The server searches for the reference in the index
+*It passes back the status code and the verse text
+*The client process prints it out

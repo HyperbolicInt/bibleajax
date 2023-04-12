@@ -108,4 +108,3 @@ void Ref::display() {// Display Reference
 string Ref::gBook() {
     return bibleBookNames[book - 1];
 }
-

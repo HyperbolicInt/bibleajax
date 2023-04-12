@@ -12,12 +12,13 @@
 using namespace std;
 
 Bible::Bible() { // Default constructor
-	infile = "/home/class/csc3004/Bibles/web-complete";
+    infile = "/home/class/csc3004/Bibles/web-complete";
     instream.open(infile.c_str(), ios::in);
     if (!instream) {
         cerr << "Error - can't open input file: " << infile << endl;
         exit(2);
     }
+    setDoesRefIndexExist(false);
 }
 
 // Constructor – pass bible filename
@@ -29,6 +30,7 @@ Bible::Bible(const string s) {
         cerr << "Error - can't open input file: " << infile << endl;
         exit(2);
     }
+    setDoesRefIndexExist(false);
     buildRefIndex();
 }
 
@@ -69,6 +71,7 @@ Verse Bible::lookup(Ref ref, LookupResult& status) {
 	Verse verse = Verse(l);
 
 	//return that verse
+	status = SUCCESS;
 	return verse;
 }
 
@@ -117,6 +120,14 @@ void Bible::display() {
 	cout << "Bible file: " << infile << endl;
 }
 
+void Bible::setDoesRefIndexExist(bool x){
+	doesRefIndexExist = x;
+}
+
+bool Bible::getDoesRefIndexExist(){
+	return doesRefIndexExist;
+}
+
 void Bible::buildRefIndex(){
 	string l;
 	do{
@@ -128,6 +139,7 @@ void Bible::buildRefIndex(){
 			lastValuePosition = instream.tellg();
 		}
 	} while (!instream.fail());
+	setDoesRefIndexExist(true);
 }
 
 int Bible::getIndexSize(){

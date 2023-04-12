@@ -1,6 +1,7 @@
 /* Demo server program for Bible lookup using AJAX/CGI interface
  * By James Skon, Febrary 10, 2011
  * updated by Bob Kasper, January 2020
+ * and even more updated by Gina Lawhon, April 2023
  * Mount Vernon Nazarene University
  * 
  * This sample program works using the cgicc AJAX library to
@@ -24,6 +25,7 @@
 #include "Bible.h"
 #include "Ref.h"
 #include "Verse.h"
+#include "fifo.h"
 using namespace std;
 
 /* Required libraries for AJAX to function */
@@ -32,7 +34,18 @@ using namespace std;
 #include "/home/class/csc3004/cgicc/HTMLClasses.h"
 using namespace cgicc;
 
+#define logging
+#define LOG_FILENAME "/home/class/csc3004/tmp/ginlawhon-sslookupclient.log"
+#include "logfile.h"
+
+
 int main() {
+
+ #ifdef logging 
+ logFile.open(LOG_FILENAME, ios::out); 
+ #endif
+
+
   /* A CGI program must send a response header with content type
    * back to the web client before any other output.
    * For an AJAX request, our response is not a complete HTML document,
@@ -40,7 +53,6 @@ int main() {
    */
   //Create the webBible to use in the rest of the code
   Bible webBible("/home/class/csc3004/Bibles/web-complete");
-
 
   cout << "Content-Type: text/plain\n\n";
   
@@ -102,15 +114,17 @@ int main() {
   /* This starts my main part of the code! The general premise is this:
 	-Put the user input into variables through use of getIntegerValue();
 	-With that input, make a reference to correspond to a place in the Bible
+	-Send the ref through a pipe to the server, which will process the lookup over there
+	-The server will send it back, and the we will process the text here
 	-If the result of that lookup is success, then output the verse!
 	-If not, run the error code for the line of code
   */
 
-  //Make a verse to store the current verse the input stream is on - like a bookmark
-  Verse parsedVerse;
-
   //inititalizing a result variable to keep track of the verse status
   LookupResult result;
+
+	string send_pipe = "SSrequest";
+	string receive_pipe = "SSreply";
 
 	//book
 	int b = book->getIntegerValue();
@@ -120,30 +134,68 @@ int main() {
 	int v = verse->getIntegerValue();
 	//number of verses
 	int numv = nv->getIntegerValue();
+	log("Book, Chapter, Verse, and NumV variables have been made");
 
 	//make the ref from the inputs
         Ref ref(b, c, v);
+	log("Ref has been made");
         
 	//assign a value to the bookmark verse, which we will call parsedVerse
-	parsedVerse = webBible.lookup(ref, result);
+	//parsedVerse = webBible.lookup(ref, result);
 
-//if there is valid character and verse input, print out the verse(s)
+  	//create the pipes to send stuff to the server and get information back
+  	Fifo sendfifo(send_pipe);
+  	Fifo recfifo(receive_pipe);
+	log("Pipes have been made");
+
+	//open the sending pipe
+	sendfifo.openwrite();
+	log("Pipes have been opened");
+
+	//send the ref over
+	string refString = to_string(b) + ":" + to_string(c) + ":" + to_string(v) + ":" + to_string(numv);
+	sendfifo.send(refString);
+	log("Ref (string) has been sent");
+	
+	
+	//if SUCCESS, then print the verse
+	//if ERROR, print the error message
+
 if(validChapterInput && validVerseInput){
-	if (result == SUCCESS) {
-		//print out book and chapter num
-		cout << "<b>" <<ref.gBook() << ":" << ref.getChap() << " </b><br><br>";
-		parsedVerse.displayVerseHtml();
-		cout << endl;
-			//if there is more than one verse, print out that many verses after the current one
-			for (int i = 1; i < numv; i++) {
-				if (result == SUCCESS) {
-				parsedVerse = webBible.nextVerse(result);
-				parsedVerse.displayVerseHtml();
-				cout << endl;
-			}
+	//quick endl; to make things formatted nicely
+	cout << endl;
+	
+	//print out book and chapter num
+	cout << "<br><b>" <<ref.gBook() << ":" << ref.getChap() << " </b><br><br>";	
+	//open up the receiving pipe so we can get the stuff back from the server
+        recfifo.openread();
+	for(int i = 0; i < numv; i++){
+		//receive each status+verse text each time the loop runs - for each verse
+
+		string resultText = recfifo.recv();
+		string buffer = resultText;
+		log("You are in the loop, we've received the result text from the server");
+
+		//parse the string into separate strings
+		string statusText = GetNextToken(buffer, "$").c_str();
+		string verseText = GetNextToken(buffer, "$").c_str();
+		log("We have parsed the text received from the pipe into statusText (the status enumeration) and the actual verseText");
+
+
+		//if the status is SUCCESS, we output the line, if not, we stop the loop and output the error message
+		if(statusText == "0"){
+			cout << verseText;
+			log("The verse text has been printed out!");
+		} else{
+			//this "verseText" is the error we have received from the server
+			cout << verseText;
+			break;
 		}
-	} else 
-		cout << webBible.error(result) << endl;
+	}
+
+
 }
+	recfifo.fifoclose();
+
   return 0;
 }

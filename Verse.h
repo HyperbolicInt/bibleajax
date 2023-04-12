@@ -29,6 +29,9 @@ class Verse {
    // REQUIRED: implement accessor functions
    string getVerse();
    Ref getRef();
+   int getVerseNum();
+   string getVerseBook();
+   string getVerseChap();
 
    // Display Verse on cout
    void display(); // Display ref & verse [with line breaks in needed].
